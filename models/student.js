@@ -17,6 +17,7 @@ const studentModel = new mongoose.Schema(
     },
 
     password: String,  
+    
     supervisor: Number,
 
     role: {

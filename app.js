@@ -1,14 +1,12 @@
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-const swaggerDoc = require('swagger-ui-express')
 var logger = require('morgan');
+const cors = require('cors');
 const mongoose = require('mongoose')
 const db = mongoose.connection
-const swaggerDocumentation = require('./helper/documentation')
 
-
-mongoose.connect('mongodb://localhost/miciah')
+mongoose.connect('mongodb://127.0.0.1/miciah')
 db.on('error', (error) => console.error(error))
 db.once('open', () => console.log('db connected'))
 
@@ -16,8 +14,10 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const studentRouter = require('./routes/student.route')
 const supervisorRouter = require('./routes/supervisor.route')
+const reportsRouter = require('./routes/reports')
 var app = express();
 
+app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -28,7 +28,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/student', studentRouter)
 app.use('/supervisor', supervisorRouter)
-app.use('/docs', swaggerDoc.serve)
-app.use('/docs', swaggerDoc.setup(swaggerDocumentation))
+app.use('/reports', reportsRouter)
 
-module.exports = app;
+app.listen(5000, () => console.log('App Started Too'))
+// module.exports = app;

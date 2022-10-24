@@ -27,27 +27,27 @@ const addReport = async (req, res) => {
 
 //GET ONE REPORT
 const getReportByID = async (req, res) => {
-  const id = req.params.id;
+  const { id } = req.body;
 
   Report.findById(id)
     .then((data) => {
-      if (!data)
-        res
-          .status(404)
-          .send({ message: "Report with id " + id + "Not found " });
-      else
+      if (data) {
         res.send({
           code: "200",
           status: "success",
           message: "Report retrieved successfully",
           data: data,
         });
+      } else {
+        res.status(404).send({ message: `Report with id ${id}Not found ` });
+      }
     })
     .catch((err) => {
+      console.log(err);
       res.status(500).send({
         code: "500",
         status: "error",
-        message: "Error retrieving Report with id=" + id,
+        message: `Error retrieving Report with id=${id}`,
       });
     });
 };
@@ -57,14 +57,16 @@ const getAllReports = async (req, res) => {
   await Report.find({})
     .sort({ createdAt: -1 })
     .then((data) => {
-      if (!data) res.status(404).send({ message: "No Reports" });
-      else
+      if (data) {
         res.send({
           code: "200",
           status: "success",
           message: "Reports retrieved successfully",
           data: data,
         });
+      } else {
+        res.status(404).send({ message: "No Reports" });
+      }
     })
     .catch((err) => {
       res.status(500).send({
@@ -80,11 +82,17 @@ const getAllReports = async (req, res) => {
 const myReports = async (req, res) => {
   const { username } = req.body;
 
+  // console.log('usser',username);
+
   await Report.find({ author: username })
     .sort({ createdAt: -1 })
     .then((err, docs) => {
-      if (err) throw err;
-      if (!docs) throw "No Docs";
+      if (err) {
+        throw err;
+      }
+      if (!docs) {
+        throw "No Docs";
+      }
       console.log(docs);
       res.status(200).json({ docs });
     })
@@ -99,8 +107,12 @@ const myPendingReports = async (req, res) => {
   await Report.find({ author: username, status: "Pending" })
     .sort({ createdAt: -1 })
     .then((err, docs) => {
-      if (err) throw err;
-      if (!docs) throw "No Docs";
+      if (err) {
+        throw err;
+      }
+      if (!docs) {
+        throw "No Docs";
+      }
       console.log(docs);
       res.status(200).json({ docs });
     })
@@ -142,20 +154,50 @@ const myRejectedReports = async (req, res) => {
 //supervisor gets all reports for his students
 const getAllReportsToMe = async (req, res) => {
   const { supervisor } = req.body;
-
+  console.log(req.body);
   await Report.find({ supervisor: supervisor })
     .sort({ createdAt: -1 })
     .then((data) => {
-      if (!data) res.status(404).send({ message: "No Reports" });
-      else
+      if (data) {
         res.send({
           code: "200",
           status: "success",
           message: "Reports retrieved successfully",
           data: data,
         });
+      } else {
+        res.status(404).send({ message: "No Reports" });
+      }
     })
     .catch((err) => {
+      console.error(err);
+      res.status(500).send({
+        code: "500",
+        status: "error",
+        message: "Error retrieving Reports",
+      });
+    });
+};
+//supervisor gets all reports pending on him
+const getAllPendingOnMe = async (req, res) => {
+  const { supervisor } = req.body;
+  console.log(req.body);
+  await Report.find({ supervisor: supervisor, status: "Pending" })
+    .sort({ createdAt: -1 })
+    .then((data) => {
+      if (data) {
+        res.send({
+          code: "200",
+          status: "success",
+          message: "Reports retrieved successfully",
+          data: data,
+        });
+      } else {
+        res.status(404).send({ message: "No Reports" });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
       res.status(500).send({
         code: "500",
         status: "error",
@@ -166,16 +208,32 @@ const getAllReportsToMe = async (req, res) => {
 
 //supervisor approves or rejects report
 const processReport = async (req, res) => {
-  const { status } = req.body;
+  const { status, id } = req.body;
 
-  let id = req.params.id;
+  console.log(req.body);
+
   try {
-    await Report.findByIdAndUpdate(id, { status: status }).then((err, doc) => {
-      if (err) throw err;
-      return res.status(200).json({ updatedReport: doc });
-    });
+    await Report.findByIdAndUpdate(id, { status: status }).then(
+      async (err, doc) => {
+        if (err) {
+          throw err;
+        }
+        return res.status(200).json({ data: await doc });
+      }
+    );
   } catch (error) {
     res.send(error);
+  }
+};
+
+const totalDocs = async (req, res) => {
+  try {
+    const totalReports = await Report.estimatedDocumentCount();
+
+    return res.status(200).send({ data: totalReports });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send("Something went wrong");
   }
 };
 
@@ -189,4 +247,6 @@ module.exports = {
   myPendingReports,
   myApprovedReports,
   myRejectedReports,
+  getAllPendingOnMe,
+  totalDocs,
 };

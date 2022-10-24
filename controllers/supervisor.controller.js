@@ -8,8 +8,10 @@ const register = async (req, res) => {
     //CHECK IF THE SUPERVISOR HAS BEEN REGISTERED BEFORE
     const existingSupervisor = await Supervisor.findOne({ email });
 
-    if (existingSupervisor)
+    if (existingSupervisor) {
       return res.status(400).send("Supervisor Already Exists");
+    }
+    
 
     //ELSE SAVE SUPERVISOR
     const newSupervisor = new Supervisor({ fullName, password, email, supervisorID });
@@ -32,11 +34,13 @@ const login = async (req, res) => {
     //CHECK IF THE SUPERVISOR IS IN THE DATABASE
     const existingSupervisor = await Supervisor.findOne({ email });
 
-    if (!existingSupervisor)
+    if (!existingSupervisor) {
       return res.status(401).json({ error: "Supervisor Does Not Exist" });
+    }
 
-    if (existingSupervisor.password !== password)
+    if (existingSupervisor.password !== password) {
       return res.status(401).json({ error: "Incorrect Email or Password" });
+    }
 
     return res.status(200).json({ supervisor: existingSupervisor });
   } catch (error) {
@@ -46,14 +50,22 @@ const login = async (req, res) => {
 
 const getAll =  async (req, res) => {
  await Supervisor.find({}).then((err, docs)=> {
-  if (err) throw err
+  if (err) { throw err }
   res.send(docs)
  })
  .catch(err => res.send(err))
 }
 
+
+const deleteAll = async (req, res) => {
+  await Supervisor.deleteMany().then((response) => {
+    res.send(response)
+  }).catch(err => res.send(err))
+}
+
 module.exports = {
   register,
   login,
-  getAll
+  getAll,
+  deleteAll
 };
