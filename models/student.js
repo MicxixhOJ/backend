@@ -20,6 +20,12 @@ const studentModel = new mongoose.Schema(
     
     supervisor: Number,
 
+    supervisorName: String,
+
+    industrySupervisor: Number,
+
+    industrySupervisorName: String,
+
     role: {
       type: String,
       default: "Student",

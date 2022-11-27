@@ -2,7 +2,7 @@ const Student = require("../models/student");
 
 // STUDENT REGISTER CONTROLLER
 const register = async (req, res) => {
-  const { fullName, username, password, email, matricNumber, supervisor } =
+  const { fullName, username, password, email, matricNumber, supervisor, industrySupe } =
     req.body;
 
   try {
@@ -21,6 +21,7 @@ const register = async (req, res) => {
       username,
       matricNumber,
       supervisor,
+      industrySupervisor: industrySupe
     });
 
     await newStudent

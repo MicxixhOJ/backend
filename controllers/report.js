@@ -2,7 +2,7 @@ const Report = require("../models/report");
 
 // STUDENT ADDS REPORT
 const addReport = async (req, res) => {
-  const { weekNumber, report, status, supervisor, author } = req.body;
+  const { weekNumber, report, status, supervisor, author, authorName, supervisorID, industrySupervisorID } = req.body;
 
   try {
     let newReport = new Report({
@@ -11,6 +11,9 @@ const addReport = async (req, res) => {
       status,
       supervisor,
       author,
+      authorName,
+      supervisorID,
+      industrySupervisorID
     });
 
     await newReport
@@ -39,7 +42,7 @@ const getReportByID = async (req, res) => {
           data: data,
         });
       } else {
-        res.status(404).send({ message: `Report with id ${id}Not found ` });
+        res.status(404).send({ message: `Report with id ${id} Not found ` });
       }
     })
     .catch((err) => {
@@ -127,15 +130,19 @@ const myApprovedReports = async (req, res) => {
   await Report.find({ author: username, status: "Approved" })
     .sort({ createdAt: -1 })
     .then((err, docs) => {
-      if (err) throw err;
-      if (!docs) throw "No Docs";
+      if (err) {
+        throw err;
+      }
+      if (!docs) {
+        throw "No Docs";
+      }
       console.log(docs);
       res.status(200).json({ docs });
     })
     .catch((err) => res.send(err));
 };
 
-//student gets his/her pending reports
+//student gets his/her rejected reports
 
 const myRejectedReports = async (req, res) => {
   const { username } = req.body;
@@ -143,8 +150,12 @@ const myRejectedReports = async (req, res) => {
   await Report.find({ author: username, status: "Rejected" })
     .sort({ createdAt: -1 }) //return latest first
     .then((err, docs) => {
-      if (err) throw err;
-      if (!docs) throw "No Docs";
+      if (err) {
+        throw err;
+      }
+      if (!docs) {
+        throw "No Docs";
+      }
       console.log(docs);
       res.status(200).json({ docs });
     })
@@ -178,6 +189,7 @@ const getAllReportsToMe = async (req, res) => {
       });
     });
 };
+
 //supervisor gets all reports pending on him
 const getAllPendingOnMe = async (req, res) => {
   const { supervisor } = req.body;
@@ -208,21 +220,51 @@ const getAllPendingOnMe = async (req, res) => {
 
 //supervisor approves or rejects report
 const processReport = async (req, res) => {
-  const { status, id } = req.body;
+  const { status, id, nextApprover } = req.body;
 
   console.log(req.body);
 
-  try {
-    await Report.findByIdAndUpdate(id, { status: status }).then(
-      async (err, doc) => {
-        if (err) {
-          throw err;
-        }
-        return res.status(200).json({ data: await doc });
+  if (nextApprover) {
+    if (status === "Pending") {
+      try {
+        await Report.findByIdAndUpdate(id, { supervisor: nextApprover }).then(
+          async (err, doc) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(200).json({ data: await doc });
+          }
+        );
+      } catch (error) {
+        res.send(error);
       }
-    );
-  } catch (error) {
-    res.send(error);
+    } else {
+      try {
+        await Report.findByIdAndUpdate(id, { status: status }).then(
+          async (err, doc) => {
+            if (err) {
+              throw err;
+            }
+            return res.status(200).json({ data: await doc });
+          }
+        );
+      } catch (error) {
+        res.send(error);
+      }
+    }
+  } else {
+    try {
+      await Report.findByIdAndUpdate(id, { status: status }).then(
+        async (err, doc) => {
+          if (err) {
+            throw err;
+          }
+          return res.status(200).json({ data: await doc });
+        }
+      );
+    } catch (error) {
+      res.send(error);
+    }
   }
 };
 
