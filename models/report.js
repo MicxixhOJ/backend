@@ -5,15 +5,17 @@ const reportSchema = new mongoose.Schema(
     weekNumber: Number,
     report: String,
     author: String,
-    authorName: String,
+    authorName: String, 
     status: {
-        type: String,
-        default: "Pending"
-    }, 
+      type: String,
+      default: "Pending",
+    },
     supervisor: Number,
 
     supervisorID: Number,
-    industrySupervisorID: Number
+    supervisorName: String,
+    industrySupervisorID: Number,
+    industrySupervisorName: String,
   },
   { timestamps: true }
 );

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-var Schema = mongoose.Schema;
 const studentModel = new mongoose.Schema(
   {
     fullName: String,
@@ -25,6 +24,12 @@ const studentModel = new mongoose.Schema(
     industrySupervisor: Number,
 
     industrySupervisorName: String,
+
+    industry: String,
+
+    phoneNumber: String,
+
+    year: String,
 
     role: {
       type: String,

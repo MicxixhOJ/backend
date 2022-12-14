@@ -2,8 +2,9 @@ const Report = require("../models/report");
 
 // STUDENT ADDS REPORT
 const addReport = async (req, res) => {
-  const { weekNumber, report, status, supervisor, author, authorName, supervisorID, industrySupervisorID } = req.body;
+  const { weekNumber, report, status, supervisor, author, authorName, supervisorID, industrySupervisorID, supervisorName, industrySupervisorName } = req.body;
 
+  // console.log(req.body)
   try {
     let newReport = new Report({
       weekNumber,
@@ -13,12 +14,15 @@ const addReport = async (req, res) => {
       author,
       authorName,
       supervisorID,
-      industrySupervisorID
+      industrySupervisorID,
+      supervisorName,
+      industrySupervisorName
     });
 
     await newReport
       .save()
       .then(() => {
+        // console.log(newReport)
         res.status(201).json({ report: newReport });
       })
       .catch((err) => res.send("Something Went Wrong"));
